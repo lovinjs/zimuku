@@ -1,21 +1,20 @@
 import json
-from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync
+from channels.generic.websocket import AsyncWebsocketConsumer
 from .utils.generate_zimuku import GenerateZimuku
 
 
-class ProgressConsumer(WebsocketConsumer):
-    def connect(self):
+class ProgressConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
         self.room_group_name = 'progress'
 
-        async_to_sync(self.channel_layer.group_add)(
+        await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
 
-        self.accept()
+        await self.accept()
 
-    def receive(self, text_data):
+    async def receive(self, text_data):
         print(text_data)
         text_data_json = json.loads(text_data)
         type = text_data_json['type']
@@ -24,9 +23,9 @@ class ProgressConsumer(WebsocketConsumer):
         if type == 'startProcess':
             print('startProcess:')
             generate_zimuku = GenerateZimuku(content, websocket=self)
-            generate_zimuku.generate_zimuku_task()
+            await generate_zimuku.generate_zimuku_task()
         else:
-            async_to_sync(self.channel_layer.group_send)(
+            await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'heart',
@@ -34,7 +33,7 @@ class ProgressConsumer(WebsocketConsumer):
                 }
             )
 
-    def heart(self, event):
+    async def heart(self, event):
         print(event)
         content = event['content']
 

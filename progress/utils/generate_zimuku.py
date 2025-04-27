@@ -2,6 +2,7 @@ import asyncio
 from openai import AsyncOpenAI
 import platform
 import os
+import re
 import json
 import base64
 from typing import List, Dict
@@ -42,14 +43,14 @@ class GenerateZimuku:
                 self.websocket = websocket
             self._initialized = True  # 标记初始化
 
-    def _send_message(self, content, file_name=''):
+    async def _send_message(self, content, file_name=''):
         """
         socket 发送消息
         """
         if self.websocket:
             content = {'content': content, 'file': file_name}
             try:
-                self.websocket.send(json.dumps(content))
+                await self.websocket.send(json.dumps(content))
             except Exception as e:
                 print(f"socket进度消息发送失败: {str(e)}")
 
@@ -103,13 +104,13 @@ class GenerateZimuku:
         print("原始模型输出：", raw_description)
 
         # 解析时间戳和描述
-        self._send_message(f"视频解析已完成:")
+        await self._send_message(f"视频解析已完成:")
         timestamped_descriptions = GenerateZimuku.parse_timestamps(raw_description)
         for item in timestamped_descriptions:
             timestamp = item['timestamp']
             description = item['description']
             print(f"[{timestamp}] {description}")
-            self._send_message(f"[{timestamp}] {description}")
+            await self._send_message(f"[{timestamp}] {description}")
         return raw_description
 
     @staticmethod
@@ -131,6 +132,18 @@ class GenerateZimuku:
         return parsed if parsed else [{"timestamp": "00:00:00", "description": description}]
 
     @staticmethod
+    def extract_json_from_text(text):
+        pattern = r'```json\n(.*?)\n```'
+        match = re.search(pattern, text, re.DOTALL)
+        if not match:
+            raise ValueError("未找到 JSON 数据")
+        json_str = match.group(1).strip()
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"JSON 解析失败: {e}")
+
+    @staticmethod
     async def task(self, question):
         print(f"Sending question: {question}")
 
@@ -141,12 +154,14 @@ class GenerateZimuku:
             model="qwen-plus",
         )
         print(f"Received answer: {response.choices[0].message.content}")
-        self._send_message(f"视频弹幕已生成：")
-        self._send_message(response.choices[0].message.content)
-        return response.choices[0].message.content
+        zimuku_json = GenerateZimuku.extract_json_from_text(response.choices[0].message.content)
+        await self._send_message(f"视频弹幕已生成：")
+        for item in zimuku_json:
+            await self._send_message(f"{item}")
+        return zimuku_json
 
     async def generate_zimuku_task(self):
-        print(f"开始生成弹幕")
+        await self._send_message(f"开始生成视频弹幕，请稍等...")
         video_description = await GenerateZimuku.get_video_description_with_timestamps(self)
         prompt = f"""
         请根据以下视频描述生成至少10条弹幕：{video_description}，要求如下：

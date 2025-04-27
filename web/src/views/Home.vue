@@ -58,7 +58,7 @@
     console.log('收到 socket 消息:', content)
     if (content === 'heart beat') return
     const log = `[${dayjs().format("HH:mm:ss")}] ${content}`
-    processProgress.value += 1
+    processProgress.value += 5
     logs.value.push(log)
     if (file && file.includes('final_prediction_effect.png')) {
       finalPredictionEffectImg.value = import.meta.env.VITE_BASE_URL + `/file/${file}`
@@ -71,7 +71,7 @@
     if (file && file.includes('future_predictions.xlsx')) {
       futurePredictionsFile.value = import.meta.env.VITE_BASE_URL + `/file/${file}`
     }
-    if (processProgress.value >= 82) {
+    if (processProgress.value >= 100) {
       isProcessing.value = false
       processStatus.value = 'success'
       stopTimer()
