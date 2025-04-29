@@ -170,6 +170,10 @@ onMounted(() => {
   initPlayer()
 })
 
+watch(zimukuVideoUrl, (newVal) => {
+  if (newVal) initPlayer()
+})
+
 onBeforeUnmount(() => {
   if (dp) {
     dp.destroy()
@@ -221,15 +225,14 @@ onBeforeUnmount(() => {
         <div class="rounded-lg bg-white p-6 shadow-xl h-128">
           <div class="flex justify-between">
             <h2 class="mb-6 text-xl font-medium text-dark-800">视频弹幕预览</h2>
-             <el-button type="success" @click="playVideo"
-                     class="ml-auto !rounded-button whitespace-nowrap">
+            <el-button type="success" @click="playVideo" class="ml-auto !rounded-button whitespace-nowrap">
               预览视频
             </el-button>
           </div>
-          <div class="w-full" v-if="zimukuVideoUrl">
+          <div class="w-full" v-show="zimukuVideoUrl">
             <div id="dplayer" class="dplayer-container"></div>
           </div>
-          <div v-else>
+          <div v-show="!zimukuVideoUrl">
             <el-empty description="暂无视频弹幕生成"></el-empty>
           </div>
         </div>

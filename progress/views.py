@@ -9,7 +9,7 @@ import json
 # Create your views here.
 
 def start(request):
-    video_file_name = request.GET.get('id')
+    video_file_name = request.GET.get('id').split('.')[0]
     print(f"请求端请求的{video_file_name}")
     zimuku_json_path = os.path.join(settings.BASE_DIR, f"progress/static/{video_file_name}.json")
     try:
