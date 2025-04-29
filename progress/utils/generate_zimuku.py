@@ -8,6 +8,7 @@ import base64
 from typing import List, Dict
 import django
 from django.conf import settings
+from pathlib import Path
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mywebsite.settings")
 django.setup()
@@ -144,9 +145,13 @@ class GenerateZimuku:
             raise ValueError(f"JSON 解析失败: {e}")
 
     @staticmethod
+    def save_to_json_file(file_path, data):
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    @staticmethod
     async def task(self, question):
         print(f"Sending question: {question}")
-
         response = await client.chat.completions.create(
             messages=[
                 {"role": "user", "content": question}
@@ -156,8 +161,14 @@ class GenerateZimuku:
         print(f"Received answer: {response.choices[0].message.content}")
         zimuku_json = GenerateZimuku.extract_json_from_text(response.choices[0].message.content)
         await self._send_message(f"视频弹幕已生成：")
+        print(f"file_path: {self.file_path}")
+        json_file_path = os.path.splitext(self.file_path)[0] + '.json'
+        GenerateZimuku.save_to_json_file(json_file_path, zimuku_json)
         for item in zimuku_json:
             await self._send_message(f"{item}")
+        pattern = r'[^\\/]+\.mp4$'
+        filename = re.search(pattern, self.file_path).group()
+        await self._send_message(f"视频文件已生成：{filename}", filename)
         return zimuku_json
 
     async def generate_zimuku_task(self):
