@@ -16,22 +16,22 @@ AI视频字幕生成播放器
 启动步骤：
   1. 安装 node
   2. 安装 pnpm，这个使用 node 的命令安装，任意目录下执行终端命令：
-     ```sh
-     npm install -g pnpm
-     ```
+    ```sh
+    npm install -g pnpm
+    ```
   3. 安装前端项目依赖，终端进入前端项目根目录 web 文件夹，执行终端命令：
-     ```sh
-     pnpm install
-     ```
+    ```sh
+    pnpm install
+    ```
   4. 切换 python 版本到 3.11.1，进入后端项目根目录 mywebsite 文件夹，执行终端命令：
-     ```sh
-     pip install -r requirements.txt
-     ```
+    ```sh
+    pip install -r requirements.txt
+    ```
   5. 启动后端，在 zimuku 文件夹下执行终端命令：
-     ```sh
-     python manage.py runserver
-     ```
+    ```sh
+    python manage.py runserver
+    ```
   6. 启动前端，在 web 文件夹下执行终端命令：
-     ```sh
-     pnpm dev
-     ```
+    ```sh
+    pnpm dev
+    ```
